@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Freelance Account Checker",
+  "version": "1.28.1",
+  "description": "Shows which Lancers / Coconala / CrowdWorks / Workana accounts are signed in to this browser, with their display names, flags Slack messages that mention them, submits proposals ordered through Slack, carries out Job Finder's DM requests, fills in Lancers packages sent from Job Finder and announces new messages / transactions of the accounts in Slack #alert.",
+  "action": {
+    "default_title": "Freelance Account Checker",
+    "default_popup": "popup.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "alarms", "scripting", "offscreen", "declarativeNetRequestWithHostAccess"],
+  "host_permissions": [
+    "https://www.lancers.jp/*",
+    "https://coconala.com/*",
+    "https://crowdworks.jp/*",
+    "https://www.workana.com/*",
+    "https://slack.com/api/*",
+    "https://files.slack.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.lancers.jp/*", "https://coconala.com/*", "https://crowdworks.jp/*", "https://www.workana.com/*"],
+      "js": ["frame-task.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}

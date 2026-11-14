@@ -1,0 +1,28 @@
+{
+  "display_information": {
+    "name": "Freelance Account Checker",
+    "description": "Search, post and delete messages in the Lancers, CrowdWorks, Coconala and Workana channels."
+  },
+  "oauth_config": {
+    "scopes": {
+      "user": [
+        "search:read",
+        "chat:write",
+        "channels:read",
+        "channels:write",
+        "groups:read",
+        "groups:write",
+        "channels:history",
+        "groups:history",
+        "users:read",
+        "files:read",
+        "files:write"
+      ]
+    }
+  },
+  "settings": {
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": false
+  }
+}

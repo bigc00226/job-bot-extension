@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Freelance Account Checker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>Signed-in accounts</h1>
+    <div class="header-actions">
+      <button id="openSettings" type="button" class="secondary" title="Slack connection and the other settings">⚙ Settings</button>
+      <button id="check" type="button">Check now</button>
+    </div>
+  </header>
+  <ul id="results"></ul>
+  <p id="footer" class="muted"></p>
+  <section class="propose">
+    <h1>Proposal (Lancers / Coconala)</h1>
+    <textarea id="orderText" rows="8" placeholder="https://www.lancers.jp/work/propose_start/1234567?…&#10;  or https://coconala.com/offers/add/1234567&#10;提案文:&#10;（提案文）&#10;完了予定日:2026年10月22日&#10;契約金額:15000"></textarea>
+    <button id="proposeBtn" type="button">Submit proposal</button>
+    <p id="proposeNote" class="muted"></p>
+  </section>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

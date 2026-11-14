@@ -1,0 +1,54 @@
+:root { --fg: #1f2328; --muted: #656d76; --bg: #fff; --line: #d0d7de; --ok: #1a7f37; --no: #8c959f; --warn: #9a6700; --err: #cf222e; --accent: #0969da; }
+@media (prefers-color-scheme: dark) {
+  :root { --fg: #e6edf3; --muted: #8d96a0; --bg: #161b22; --line: #30363d; --ok: #3fb950; --no: #6e7681; --warn: #d29922; --err: #f85149; --accent: #4493f8; }
+}
+body { margin: 0; padding: 12px; width: 340px; font: 13px/1.4 system-ui, "Segoe UI", "Hiragino Sans", "Meiryo", sans-serif; color: var(--fg); background: var(--bg); }
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.header-actions { display: flex; gap: 6px; flex: none; }
+h1 { font-size: 14px; margin: 0; }
+button { font: inherit; padding: 4px 10px; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
+button:disabled { opacity: .6; cursor: default; }
+ul { list-style: none; margin: 0; padding: 0; }
+#results > li { padding: 8px 0; border-top: 1px solid var(--line); }
+.line { display: flex; align-items: center; gap: 8px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--no); }
+/* Solid green whenever the account is signed in, even if the name couldn't be read. */
+.signed-in .dot, .unknown .dot { background: #22c55e; }
+.error .dot { background: var(--err); }
+.site { font-weight: 600; width: 84px; flex: none; }
+.status { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.status a { color: var(--accent); }
+.muted { color: var(--muted); font-size: 11px; margin: 8px 0 0; }
+.slack-hit { flex: none; padding: 1px 7px; border-radius: 10px; background: #611f69; color: #fff; font-size: 11px; font-weight: 600; text-decoration: none; }
+.options { width: 380px; }
+.options input { box-sizing: border-box; width: 100%; margin: 8px 0; padding: 6px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.options .row { display: flex; gap: 8px; }
+.options textarea { box-sizing: border-box; width: 100%; margin: 8px 0; padding: 6px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
+.options input[type="checkbox"] { width: auto; margin: 8px 6px 8px 0; }
+button.secondary { background: transparent; color: var(--accent); }
+.icon-btn { flex: none; padding: 1px 7px; background: transparent; color: var(--accent); }
+.slack-panel { margin: 8px 0 0 18px; }
+.compose { display: flex; gap: 6px; align-items: flex-end; }
+.compose textarea { flex: 1; min-width: 0; resize: vertical; font: inherit; padding: 4px 6px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.messages { max-height: 220px; overflow-y: auto; margin-top: 6px; }
+.messages li { padding: 6px 0; border-top: 1px dashed var(--line); }
+.msg-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg-meta { color: var(--muted); font-size: 11px; }
+.propose { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.propose textarea { box-sizing: border-box; width: 100%; margin: 8px 0 6px; resize: vertical; font: inherit; padding: 4px 6px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.propose .muted { white-space: pre-wrap; overflow-wrap: anywhere; }
+button.danger { margin-top: 4px; padding: 1px 8px; font-size: 11px; background: transparent; border-color: var(--err); color: var(--err); }
+/* Options › Slack connection: the setup steps (slack-setup.js). */
+.options h2 { font-size: 13px; margin: 14px 0 4px; }
+.options h2 .muted { font-weight: normal; }
+.options a.button-link { display: inline-block; padding: 4px 10px; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; text-decoration: none; }
+.options a.button-link.secondary { background: transparent; color: var(--accent); }
+.options details { margin: 8px 0; }
+.options details label { display: block; }
+.options summary { cursor: pointer; color: var(--accent); }
+.options .log { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 220px; overflow-y: auto; margin-top: 6px; font-size: 11px; color: var(--muted); }
+.options .log:empty { display: none; }
+.options #setupLog { margin-top: 8px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; }
+.options .log .ok { color: var(--ok); }
+.options .log .warn { color: var(--warn); }
+.options .log .error { color: var(--err); }

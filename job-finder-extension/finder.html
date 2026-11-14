@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Finder</title>
+  <link id="favicon" rel="icon" href="icons/icon32.png">
+  <link rel="stylesheet" href="finder.css">
+</head>
+<body>
+  <!-- パスワード入力（起動時） -->
+  <div id="lock" class="lock" hidden>
+    <form id="lockForm" class="lock-box">
+      <img src="icons/icon128.png" alt="" width="56" height="56">
+      <h1>Job Finder</h1>
+      <label for="lockPassword">パスワードを入力してください</label>
+      <input id="lockPassword" type="password" autocomplete="current-password" required>
+      <p id="lockError" class="error-text" hidden>パスワードが違います。</p>
+      <button type="submit" class="btn">Unlock</button>
+    </form>
+  </div>
+
+  <!-- 上部ナビゲーション -->
+  <nav class="topnav" id="topnav" hidden aria-label="Main menu">
+    <span class="topnav-brand"><img src="icons/icon32.png" alt="" width="20" height="20"> Job Finder</span>
+    <button type="button" class="topnav-item" data-page="proposals">Proposals</button>
+    <button type="button" class="topnav-item" data-page="accounts">Accounts <span id="navAlertCount" class="nav-alert-count" hidden></span></button>
+    <button type="button" class="topnav-item" data-page="history">History</button>
+    <button type="button" class="topnav-item" data-page="settings">Settings</button>
+    <!-- Icon-only actions at the far right -->
+    <div class="topnav-actions">
+      <button id="pinWindow" type="button" class="nav-icon" title="Pin on top: shrink to a small always-on-top window" aria-label="Pin on top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6l-1 6 4 4H6l4-4z"/><path d="M12 13v8"/></svg>
+      </button>
+      <button id="markRead" type="button" class="nav-icon" title="Mark all new jobs as viewed" aria-label="Mark all new jobs as viewed">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13l4 4 8-9"/><path d="M12 16l1.5 1.5L22 8"/></svg>
+        <span id="navNewCount" class="nav-count" hidden></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 提案 -->
+  <div class="app" id="app" hidden>
+    <nav class="sidebar" aria-label="Platforms and settings">
+      <div class="brand">
+        <h2>Platforms</h2>
+        <span id="countdown" class="countdown"></span>
+      </div>
+      <div id="platforms" class="platform-list"></div>
+
+      <button id="completedView" type="button" class="side-button completed-button" title="Jobs with a successful bid">✅ Bid completed <span id="completedCount" class="pill done">0</span></button>
+      <button id="deletedView" type="button" class="side-button deleted-button">🗑 Deleted items <span id="deletedCount" class="pill">0</span></button>
+
+      <details id="settingsBox" class="settings">
+        <summary>⚙ Search settings</summary>
+
+        <section>
+          <h3>Search</h3>
+          <label class="switch"><input id="autoToggle" type="checkbox"><span>Auto-search</span></label>
+          <label class="inline">Every
+            <select id="interval" aria-label="Search interval">
+              <option value="5">5 sec</option>
+              <option value="10">10 sec</option>
+              <option value="15">15 sec</option>
+              <option value="30">30 sec</option>
+              <option value="60">1 min</option>
+              <option value="120">2 min</option>
+              <option value="300">5 min</option>
+            </select>
+          </label>
+          <button id="refreshNow" type="button" class="btn">Search now</button>
+        </section>
+
+        <section>
+          <h3>Filters</h3>
+          <label class="switch"><input id="verifiedOnly" type="checkbox"><span>Only clients with ID or phone verification</span></label>
+          <div class="field">
+            <span class="field-label">Price range (JPY)</span>
+            <div class="pair">
+              <input id="priceMin" type="number" min="0" step="1000" placeholder="Min"> –
+              <input id="priceMax" type="number" min="0" step="1000" placeholder="Max">
+            </div>
+            <span class="hint">Applies to all jobs unless a category has its own range.</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Currency ($ → ¥)</span>
+            <div class="pair">1 USD = <input id="usdRate" type="number" min="1" step="1"> JPY</div>
+            <div class="pair">$ <input id="convUsd" type="number" min="0" step="1" placeholder="Amount"> = <output id="convJpy">¥0</output></div>
+          </div>
+        </section>
+
+        <section>
+          <h3>View</h3>
+          <div class="zoom" role="group" aria-label="Zoom">
+            <span class="field-label">Zoom</span>
+            <button id="zoomOut" type="button" class="icon" aria-label="Zoom out">−</button>
+            <button id="zoomReset" type="button" class="zoom-value" title="Reset zoom">100%</button>
+            <button id="zoomIn" type="button" class="icon" aria-label="Zoom in">+</button>
+          </div>
+          <button id="toggleTranslator" type="button" class="btn ghost">Show translator</button>
+          <button id="openWindow" type="button" class="btn ghost">Open as app</button>
+        </section>
+      </details>
+    </nav>
+
+    <aside class="cat-panel" id="catPanel" hidden aria-label="検索の設定"></aside>
+
+    <div class="main" id="main">
+      <div class="view-bar">
+        <div class="tabs" role="tablist">
+          <button id="tabAll" type="button" role="tab" class="tab">All jobs</button>
+          <button id="tabPinned" type="button" role="tab" class="tab">📌 Pinned</button>
+        </div>
+        <div id="viewTitle" class="view-title"></div>
+        <input id="listSearch" class="list-search" type="search" placeholder="🔍 Search jobs (title, description, client)" aria-label="Search jobs">
+        <div id="summary" class="summary"></div>
+        <div id="listActions" class="trash-actions" hidden>
+          <button id="deleteAllShown" type="button" class="btn ghost danger" title="Move every job in this list to Deleted items (you can restore them from there)">🗑 Delete all</button>
+        </div>
+        <div id="trashActions" class="trash-actions" hidden>
+          <button id="restoreAll" type="button" class="btn ghost">Restore all</button>
+          <button id="purgeAll" type="button" class="btn danger">Delete all permanently</button>
+        </div>
+        <div id="completedActions" class="trash-actions" hidden>
+          <label class="switch"><input id="completedSelectAll" type="checkbox"><span>Select all</span></label>
+          <button id="completedDeleteSelected" type="button" class="btn ghost danger">Delete selected</button>
+          <button id="completedDeleteAll" type="button" class="btn danger">Delete all</button>
+        </div>
+      </div>
+
+      <div class="results-wrap" id="resultsWrap">
+        <main id="results" class="results"></main>
+        <div id="detail" class="detail-backdrop" hidden>
+          <div class="detail-window" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+            <div id="detailBody" class="detail-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="translator" id="translator" aria-label="翻訳">
+      <div class="resize-handle" id="resizeHandle" title="ドラッグして幅を変更"></div>
+      <header class="tr-head">
+        <select id="trEngine" class="tr-engine" aria-label="翻訳サービス">
+          <option value="google">Google Translate</option>
+          <option value="deepl">DeepL</option>
+        </select>
+        <button id="closeTranslator" type="button" class="icon" aria-label="Hide translator">×</button>
+      </header>
+      <label id="deeplKeyRow" class="deepl-key" hidden>
+        <span>DeepL APIキー</span>
+        <input id="deeplKey" type="text" spellcheck="false" autocomplete="off" placeholder="xxxxxxxx-xxxx-…:fx">
+        <span class="hint">DeepLを使うには必要です（無料プランで可）。このブラウザにのみ保存されます。</span>
+      </label>
+      <div class="tr-bar">
+        <label class="inline">To
+          <select id="trTarget" aria-label="翻訳先の言語">
+            <option value="en">English</option>
+            <option value="ja">Japanese</option>
+            <option value="es">Spanish</option>
+            <option value="pt">Portuguese</option>
+            <option value="zh-CN">Chinese (Simplified)</option>
+            <option value="ko">Korean</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="id">Indonesian</option>
+          </select>
+        </label>
+        <div class="zoom" role="group" aria-label="文字の大きさ">
+          <button id="trSmaller" type="button" class="icon" aria-label="Smaller text">A−</button>
+          <button id="trLarger" type="button" class="icon" aria-label="Larger text">A+</button>
+        </div>
+      </div>
+      <button id="toggleInput" type="button" class="link toggle-input">▲ Hide input</button>
+      <div id="inputArea" class="input-area">
+        <textarea id="trInput" placeholder="翻訳したい文章を入力、または案件の依頼内容をクリック"></textarea>
+        <div class="tr-actions">
+          <button id="trClear" type="button" class="btn ghost">Clear</button>
+          <button id="trGo" type="button" class="btn">Translate</button>
+        </div>
+      </div>
+      <div class="tr-output-head">
+        <span id="trOutputLabel">翻訳結果</span>
+        <a id="trOpen" class="link" target="_blank" rel="noopener noreferrer" href="https://translate.google.com/">Open in Google Translate</a>
+      </div>
+      <div id="trOutput" class="tr-output" aria-live="polite"></div>
+    </aside>
+  </div>
+
+  <!-- アカウント -->
+  <section class="page wide" id="pageAccounts" hidden>
+    <div class="page-head">
+      <h2>Accounts</h2>
+      <button id="accountsCheck" type="button" class="btn" title="Read the accounts posted to Slack #accounts">Check</button>
+      <button id="accountsRequest" type="button" class="btn ghost" title="Post ACCOUNT REQUEST to #accounts: every Freelance Account Checker posts the accounts signed in to its browser">📨 Request accounts</button>
+      <button id="accountsDeleteAll" type="button" class="btn ghost danger" title="Delete every account (and every message in #accounts)">Delete all</button>
+    </div>
+    <p id="accountsStatus" class="hint page-note"></p>
+    <div id="accountsList" class="accounts"></div>
+  </section>
+
+  <!-- History: every bid and its outcome -->
+  <section class="page wide" id="pageHistory" hidden>
+    <div class="page-head">
+      <h2>History</h2>
+      <div id="historySummary" class="history-summary"></div>
+    </div>
+    <div class="history-tools">
+      <input id="historySearch" type="search" placeholder="🔍 Search (job, account, reason)" aria-label="Search history">
+      <select id="historyStatus" aria-label="Outcome">
+        <option value="">All outcomes</option>
+        <option value="success">✅ Success</option>
+        <option value="failure">❌ Failure</option>
+        <option value="unavailable">🚫 Proposal feature unavailable</option>
+        <option value="proposing">⏳ Proposing</option>
+      </select>
+      <select id="historySite" aria-label="Platform">
+        <option value="">All platforms</option>
+        <option value="lancers">Lancers</option>
+        <option value="coconala">Coconala</option>
+        <option value="crowdworks">CrowdWorks</option>
+      </select>
+      <label class="switch"><input id="historySelectAll" type="checkbox"><span>Select all</span></label>
+      <button id="historyDeleteSelected" type="button" class="btn ghost danger" disabled>Delete selected</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+  </section>
+
+  <!-- Settings -->
+  <section class="page" id="pageSettings" hidden>
+    <h2>Settings</h2>
+    <form id="slackForm" class="settings-card">
+      <h3>Slack</h3>
+      <p class="hint">Paste the same Slack <b>user</b> token (starts with <code>xoxp-</code>) that is saved in Freelance Account Checker. No token yet? Set Slack up in Freelance Account Checker first (right-click its icon → Options → Slack connection: it creates the Slack app and the channels), then paste its token here. Job Finder reads #accounts with it, posts BID orders to #lancers / #coconala / #crowdworks and watches those channels for the Success / Failure reports. It is stored only in this browser.</p>
+      <label>User token <input id="slackToken" type="password" autocomplete="off" placeholder="xoxp-…" spellcheck="false"></label>
+      <p id="slackStatus" class="pw-message" aria-live="polite"></p>
+      <div class="card-actions-row">
+        <button type="submit" class="btn">Save &amp; test</button>
+        <button id="slackDisconnect" type="button" class="btn ghost">Disconnect</button>
+      </div>
+    </form>
+
+    <div class="settings-card">
+      <h3>Clear Slack channels</h3>
+      <p class="hint">Deletes every message (including thread replies) from the ticked channels. You are asked to confirm with the exact count first. Slack only lets a token delete its own messages unless it belongs to a workspace admin. Freelance Account Checker posts the accounts to #accounts again on its next check.</p>
+      <div id="clearChannelList" class="channel-checks"></div>
+      <p id="clearStatus" class="pw-message" aria-live="polite"></p>
+      <button id="clearChannels" type="button" class="btn danger">Delete all messages…</button>
+    </div>
+
+    <div class="settings-card">
+      <h3>Desktop helper: notifications and the pinned window</h3>
+      <p class="hint">Chrome can't put a window above other programs or on every virtual desktop. The small Job Finder Helper for Windows can: with it, new jobs and messages pop up in the top-right corner <b>above every window</b> (without taking the keyboard focus), and the 📌 pinned window shows on <b>every desktop</b>, so it stays in view when you switch desktops. Install it once: in the Job Finder folder, open <b>native</b> and double-click <b>install.cmd</b>; when it asks, paste the ID below. Then reload this page. Without it, notifications open in a small Chrome window.</p>
+      <p class="helper-id">Job Finder's ID: <code id="extensionId"></code> <button id="copyExtensionId" type="button" class="btn">Copy</button></p>
+      <p id="helperStatus" class="pw-message" aria-live="polite"></p>
+      <button id="testAlert" type="button" class="btn">Test notification</button>
+    </div>
+  </section>
+
+  <!-- BID: pick an account, write the proposal, Confirm → order posted to Slack -->
+  <div id="bidDialog" class="bid-backdrop" hidden>
+    <div class="bid-window" role="dialog" aria-modal="true" aria-labelledby="bidTitle">
+      <div id="bidBody"></div>
+    </div>
+  </div>
+  <!-- DM to a job's client (sent by Freelance Account Checker through Slack) -->
+  <!-- An account's new messages / transactions (from Slack #alert) -->
+  <div id="alertDialog" class="bid-backdrop" hidden>
+    <div class="bid-window" role="dialog" aria-modal="true" aria-labelledby="alertTitle">
+      <div id="alertBody"></div>
+    </div>
+  </div>
+  <!-- A Lancers account's PACKAGE input (package.js) -->
+  <div id="pkgDialog" class="bid-backdrop" hidden>
+    <div class="bid-window pkg-window" role="dialog" aria-modal="true" aria-labelledby="pkgTitle">
+      <div id="pkgBody"></div>
+    </div>
+  </div>
+  <!-- A Lancers account's PORTFOLIO input (portfolio.js) -->
+  <div id="pfDialog" class="bid-backdrop" hidden>
+    <div class="bid-window pkg-window" role="dialog" aria-modal="true" aria-labelledby="pfTitle">
+      <div id="pfBody"></div>
+    </div>
+  </div>
+  <div id="dmDialog" class="bid-backdrop" hidden>
+    <div class="bid-window" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
+      <div id="dmBody"></div>
+    </div>
+  </div>
+  <div id="jfToast" class="jf-toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="finder.js"></script>
+</body>
+</html>

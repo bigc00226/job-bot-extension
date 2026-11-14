@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Freelance Account Checker – Settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body class="options">
+  <h1>Slack connection</h1>
+  <p class="muted">Freelance Account Checker and Job Finder connect to Slack with one Slack <b>user</b> token (starts with <code>xoxp-</code>), set up right here. Do steps 1–3 once per workspace; in another browser or on another PC, only step 2, with the <b>same</b> token. It is stored only in this browser.</p>
+
+  <h2>1. Create the Slack app <span class="muted">(once)</span></h2>
+  <div class="row">
+    <a id="createApp" class="button-link" href="https://api.slack.com/apps?new_app=1" target="_blank" rel="noopener">Create the Slack app</a>
+    <a class="button-link secondary" href="https://api.slack.com/apps" target="_blank" rel="noopener">My Slack apps</a>
+  </div>
+  <p class="muted">Slack opens with the app (its name and scopes) already filled in; sign in to Slack in this browser if asked. Pick the workspace → <b>Next</b> → <b>Create</b>, then on <b>OAuth &amp; Permissions</b> press <b>Install to Workspace</b> → <b>Allow</b> and copy the <b>User OAuth Token</b>. Already made the app? Don't make a second one: copy its token from <b>My Slack apps</b> → the app → OAuth &amp; Permissions.</p>
+  <p id="manifestNote" class="muted" hidden>setup/slack-app-manifest.json couldn't be read, so Slack opens without the app filled in: paste that file's contents as the app manifest.</p>
+
+  <h2>2. Paste the token</h2>
+  <input id="token" type="password" placeholder="xoxp-…" autocomplete="off">
+  <div class="row">
+    <button id="save" type="button">Save &amp; test</button>
+    <button id="clear" type="button" class="secondary">Disconnect</button>
+    <button id="copyToken" type="button" class="secondary">Copy token</button>
+  </div>
+  <p id="status" class="muted"></p>
+  <div id="tokenCheck" class="log" aria-live="polite"></div>
+
+  <h2>3. Create the channels <span class="muted">(once)</span></h2>
+  <p class="muted">Creates (or unarchives) and joins <span id="setupChannelList"></span>. Channels that already exist are left as they are, so it's safe to press again.</p>
+  <details>
+    <summary>Options</summary>
+    <label><input id="setupPrivate" type="checkbox"> Create new channels as private</label>
+    <label class="muted" for="setupInvite">Slack member IDs to invite to every channel (optional; Profile → ⋯ → Copy member ID)</label>
+    <input id="setupInvite" type="text" placeholder="U01ABCDEF,U02GHIJKL" autocomplete="off" spellcheck="false">
+  </details>
+  <div class="row">
+    <button id="setupChannels" type="button">Create / join channels</button>
+  </div>
+  <div id="setupLog" class="log" hidden aria-live="polite"></div>
+  <p class="muted"><b>Job Finder:</b> paste the same token in Job Finder → Settings → Slack → Save &amp; test.</p>
+
+  <p class="muted">While a token is saved, <code>#accounts</code> is also watched: an <b>ACCOUNT REQUEST</b> message (Job Finder → Accounts → Request accounts) makes this browser check its sign-ins again and post every account it finds there.</p>
+
+  <h1>Alerts (#alert)</h1>
+  <p class="muted">The Coconala, CrowdWorks and Lancers accounts signed in here are looked at afresh at the interval below, with no window or tab opened: the site's page is loaded in this extension's hidden page with this browser's sign-in, and only the numbers on its header's ✉ message and ☑ transaction / やることリスト buttons are read (on CrowdWorks the 🔔 お知らせ, where contracts and 仮払い appear). When a number goes up, a new message or transaction is announced in <code>#alert</code> with the account that received it (the channel is created if it's missing). On Coconala, <code>https://coconala.com/message</code> is opened as well, and each conversation showing an unread number is posted with its sender, time and message as the list shows them (conversations aren't opened, so nothing is marked read); Job Finder pops it up and lists it under the account. A badge already showing when alerts start is announced once.</p>
+  <label><input id="alertsOn" type="checkbox"> Post new messages / transactions to #alert</label>
+  <label class="muted" for="alertInterval">Check every (minutes)</label>
+  <input id="alertInterval" type="number" min="1" step="1" placeholder="1">
+  <div class="row">
+    <button id="checkAlertsNow" type="button">Check now</button>
+  </div>
+  <p id="alertStatus" class="muted"></p>
+
+  <h1>DMs</h1>
+  <p class="muted">While a token is saved, Job Finder's <b>DM</b> requests to an account signed in here are also carried out (send a message to a job's client, then post DM Success / DM Failure in the request's thread): CrowdWorks DMs come in <code>#crowdworks</code> (the job page is loaded and its 相談 box used), Coconala DMs in <code>#coconala</code> (the client's page is loaded, メッセージを送る pressed, and the message sent from the message window), Lancers and Workana DMs in <code>#messages</code>. About 2 seconds pass before each input and click, and about 3 seconds after each click — for proposals too. Messages and transactions on the sites are never read.</p>
+
+  <h1>Lancers packages</h1>
+  <p class="muted">While a token is saved, Job Finder's <b>PACKAGE REQUEST</b> in <code>#package</code> (made if missing) for the Lancers account signed in here is carried out: <code>https://www.lancers.jp/myplan/add</code> is opened in a minimized window, 手動でパッケージを作成する pressed, and every step filled in from what Job Finder sent (text about 1 second apart, selections 0.3 seconds apart), pressing 次へ after each; the images, video, audio and PDF are attached last (when the package has any — they're optional). Progress and the result are posted in the request's thread. The package and its files come from Slack, so the token needs the <code>files:read</code> scope (and Job Finder's <code>files:write</code>).</p>
+  <label><input id="packageAutoPublish" type="checkbox"> Publish packages automatically (otherwise the filled-in page is brought up for you to check and publish)</label>
+
+  <h1>Lancers portfolio items</h1>
+  <p class="hint">Job Finder's PORTFOLIO button posts a PORTFOLIO REQUEST to Slack #portfolio (searchable there). The browser signed in to that Lancers account opens myportfolio, presses 新規作成, fills in the form with the cover image and contents, and answers in the request's thread.</p>
+  <label><input id="portfolioAutoSave" type="checkbox"> Save portfolio items automatically (press 保存; otherwise the filled-in page is brought up for you to check and save)</label>
+
+  <h1>Auto-propose (Lancers / Coconala / CrowdWorks)</h1>
+  <p class="muted">While on, new messages in <code>#lancers</code>, <code>#coconala</code> and <code>#crowdworks</code> from the sender below are opened as Lancers proposals, Coconala offers or CrowdWorks proposals (by their URL), filled in and submitted automatically, and the result is posted back to the channel. Checked every 5 seconds; orders posted while it is off are ignored.</p>
+  <label><input id="autoPropose" type="checkbox"> Submit proposals automatically</label>
+  <input id="triggerSender" type="text" placeholder="server">
+  <label class="muted" for="defaultHours">CrowdWorks hourly jobs: hours per week (稼働時間/週) to use when an order doesn't say</label>
+  <input id="defaultHours" type="number" min="1" step="1" placeholder="10">
+  <p id="proposeStatus" class="muted"></p>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
